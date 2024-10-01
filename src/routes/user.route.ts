@@ -1,13 +1,13 @@
 import express from 'express'
 import { createUser } from '~/controllers/user.controller'
+import authMiddleware from '~/middlewares/auth.middleware'
 import { upload, uploadImageToCloudinary } from '~/middlewares/upload.middleware'
-import userMiddleware from '~/middlewares/user.middleware'
 import { wrapAsync } from '~/utils/response'
 const router = express.Router()
 
 router.post(
   '/create',
-  userMiddleware.createUserRules(),
+  authMiddleware.authUserRules(),
   upload.single('avatar'),
   uploadImageToCloudinary,
   wrapAsync(createUser)

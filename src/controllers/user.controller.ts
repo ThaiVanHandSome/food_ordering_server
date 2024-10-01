@@ -1,15 +1,14 @@
 import { Request, Response } from 'express'
+import { STATUS } from '~/constants/httpStatus'
 import userService from '~/services/user.service'
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const user: UserRequest = req.body
     const result = await userService.createUser(user)
-    return res.status(201).json(result)
+    return res.status(STATUS.OK).json(result)
   } catch (error) {
-    const err = error as Error
-    return res.status(404).json({
-      message: err.message
-    })
+    console.log(error)
+    throw error
   }
 }
