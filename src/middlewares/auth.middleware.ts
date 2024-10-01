@@ -10,17 +10,13 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
     try {
       const decoded = (await verifyToken(accessToken)) as PayloadToken
       if (decoded) return next()
-      throw new ErrorHandler(STATUS.UNAUTHORIZED, {
-        message: 'Không tồn tại token'
-      })
+      throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Không tồn tại token')
     } catch (error) {
       console.log(error)
       throw error
     }
   }
-  throw new ErrorHandler(STATUS.UNAUTHORIZED, {
-    message: 'Token chưa được gửi đi'
-  })
+  throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Token chưa được gửi đi')
 }
 
 const authUserRules = () => {

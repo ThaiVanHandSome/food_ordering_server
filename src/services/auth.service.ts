@@ -56,9 +56,7 @@ const refreshToken = async (refreshToken: string) => {
       token: refreshToken
     })
     if (!existRefreshToken) {
-      throw new ErrorHandler(STATUS.UNAUTHORIZED, {
-        message: 'Token không tồn tại'
-      })
+      throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Token không tồn tại')
     }
     const decoded = (await verifyToken(refreshToken)) as PayloadToken
     const user = await UserModel.findOne({
@@ -78,9 +76,7 @@ const refreshToken = async (refreshToken: string) => {
       }
       return response
     }
-    throw new ErrorHandler(STATUS.UNAUTHORIZED, {
-      message: 'Refresh Token không tồn tại'
-    })
+    throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Refresh Token không tồn tại')
   } catch (error) {
     console.log(error)
     throw error

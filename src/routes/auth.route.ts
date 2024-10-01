@@ -5,7 +5,7 @@ import { wrapAsync } from '~/utils/response'
 
 const router = express.Router()
 
-router.use('/login', authMiddleware.authUserRules(), wrapAsync(login))
-router.use('/refresh-token', wrapAsync(refreshToken))
+router.post('/login', authMiddleware.authUserRules(), wrapAsync(login))
+router.post('/refresh-token', wrapAsync(refreshToken))
 
 export default router

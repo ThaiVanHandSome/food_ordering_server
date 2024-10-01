@@ -15,6 +15,18 @@ const productSchema = new Schema(
       required: true,
       min: [1, 'Price must be greater than 0']
     },
+    sold: {
+      type: Number,
+      required: true,
+      min: [0, 'Sold must be greater or equal than 0'],
+      default: 0
+    },
+    view: {
+      type: Number,
+      required: true,
+      min: [0, 'View must be greater or equal than 0'],
+      default: 0
+    },
     description: {
       type: String,
       required: true,
