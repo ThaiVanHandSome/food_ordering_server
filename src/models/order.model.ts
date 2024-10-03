@@ -15,10 +15,16 @@ const orderSchema = new Schema(
       minLength: 1,
       maxLength: 20
     },
+    customer_id: {
+      type: String,
+      required: true,
+      trim: true,
+      minLength: 1,
+      maxLength: 1000
+    },
     assignee: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'users',
-      required: true
+      ref: 'users'
     },
     product: {
       type: mongoose.SchemaTypes.ObjectId,

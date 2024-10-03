@@ -76,7 +76,7 @@ const getProducts = async (query: ProductQuery) => {
     const response = {
       message: 'Lấy sản phẩm thành công',
       data: {
-        products,
+        content: products,
         pagination: {
           page,
           limit,

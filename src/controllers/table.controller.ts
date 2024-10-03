@@ -12,3 +12,16 @@ export const addTable = async (req: Request, res: Response) => {
     throw error
   }
 }
+
+export const checkAvailableTable = async (req: Request, res: Response) => {
+  try {
+    const { table_number, token } = req.query
+    console.log(table_number, token)
+
+    const result = await tableService.checkAvailableTable(parseInt(table_number as string), token as string)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
