@@ -28,7 +28,7 @@ const addProduct = async (product: ProductRequest) => {
 
 const getProducts = async (query: ProductQuery) => {
   try {
-    let { page = 1, limit = 30, name, categoryId, priceMax, priceMin, sortBy = 'createdAt', order = 'asc' } = query
+    let { page = 1, limit = 6, name, categoryId, priceMax, priceMin, sortBy = 'createdAt', order = 'asc' } = query
     page = Number(page)
     limit = Number(limit)
     let condition: any = {}
@@ -66,8 +66,7 @@ const getProducts = async (query: ProductQuery) => {
         .skip(page * limit - limit)
         .limit(limit)
         .select({
-          __v: 0,
-          description: 0
+          __v: 0
         })
         .lean(),
       ProductModel.find(condition).countDocuments().lean()
@@ -80,7 +79,8 @@ const getProducts = async (query: ProductQuery) => {
         pagination: {
           page,
           limit,
-          pageSize: page_size
+          pageSize: page_size,
+          total: totalProducts
         }
       }
     }

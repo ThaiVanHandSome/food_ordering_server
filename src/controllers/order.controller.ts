@@ -27,3 +27,14 @@ export const getUserOrder = async (req: Request, res: Response) => {
     throw error
   }
 }
+
+export const getStatisticsOrder = async (req: Request, res: Response) => {
+  try {
+    const query: StatisticOrderQuery = req.query
+    const result = await orderService.getStatisticsOrder(query)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}

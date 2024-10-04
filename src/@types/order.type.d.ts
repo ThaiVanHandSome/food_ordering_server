@@ -9,3 +9,11 @@ interface OrderRequest {
     status?: string
   }[]
 }
+
+interface StatisticOrderQuery {
+  page: string | number
+  limit: string | number
+  table_number: string | number
+  customer_name: string
+  status: string
+}
