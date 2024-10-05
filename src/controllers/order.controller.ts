@@ -38,3 +38,46 @@ export const getStatisticsOrder = async (req: Request, res: Response) => {
     throw error
   }
 }
+
+export const getStatisticsTable = async (req: Request, res: Response) => {
+  try {
+    const result = await orderService.getStatisticsTable()
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const updateOrder = async (req: Request, res: Response) => {
+  try {
+    const query: OrderUpdateQuery = req.query
+    const result = await orderService.updateOrder(query)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const result = await orderService.deleteOrder(id)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const findCustomer = async (req: Request, res: Response) => {
+  try {
+    const { customer_id } = req.query
+    const result = await orderService.findCustomer(customer_id as string)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}

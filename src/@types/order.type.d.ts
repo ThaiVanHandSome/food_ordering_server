@@ -10,6 +10,13 @@ interface OrderRequest {
   }[]
 }
 
+interface OrderUpdateQuery {
+  order_id?: string
+  product_id?: string
+  buy_count?: string
+  status?: string
+}
+
 interface StatisticOrderQuery {
   page: string | number
   limit: string | number

@@ -1,3 +1,4 @@
+import { pick } from 'lodash'
 import { STATUS } from '~/constants/httpStatus'
 import { orderStatus } from '~/enums/orderStatus.enum'
 import { OrderModel, ProductModel, TableModel } from '~/models'
@@ -69,36 +70,9 @@ const getUserOrder = async (customer_id: string, customer_name: string, table_nu
   }
 }
 
-const getStatisticsOrder = async (query: StatisticOrderQuery) => {
+const getStatisticsTable = async () => {
   try {
-    let { page = 1, limit = 6, customer_name, table_number, status } = query
-    console.log(customer_name)
-
-    page = Number(page)
-    limit = Number(limit)
-    table_number = parseInt(table_number as string)
-    let condition = {}
-    if (customer_name) {
-      condition = {
-        ...condition,
-        customer_name
-      }
-    }
-    if (table_number) {
-      condition = {
-        ...condition,
-        table_number
-      }
-    }
-    const res = {
-      tables: [],
-      orders: [],
-      cntInprogressOrder: 0,
-      cntCookingOrder: 0,
-      cntRejectedOrder: 0,
-      cntServedOrder: 0,
-      cntPaidOrder: 0
-    }
+    const res: never[] = []
     const tables = await TableModel.find().lean()
     for (const table of tables) {
       const cntInprogressOrder = await OrderModel.find({
@@ -143,43 +117,72 @@ const getStatisticsOrder = async (query: StatisticOrderQuery) => {
         cntServedOrder,
         cntPaidOrder
       }
-      res.tables.push(tableRes as never)
+      res.push(tableRes as never)
+    }
+    const response = {
+      message: 'Lấy thông kê các bàn thành công',
+      data: res
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+const getStatisticsOrder = async (query: StatisticOrderQuery) => {
+  try {
+    // eslint-disable-next-line prefer-const
+    let { page = 1, limit = 6, customer_name, table_number, status } = query
+    page = Number(page)
+    limit = Number(limit)
+    table_number = parseInt(table_number as string)
+    let condition = {}
+    if (customer_name) {
+      condition = {
+        ...condition,
+        customer_name
+      }
+    }
+    if (table_number) {
+      condition = {
+        ...condition,
+        table_number
+      }
+    }
+    const res = {
+      tables: [],
+      orders: [],
+      cntInprogressOrder: 0,
+      cntCookingOrder: 0,
+      cntRejectedOrder: 0,
+      cntServedOrder: 0,
+      cntPaidOrder: 0
     }
 
-    res.cntInprogressOrder = await OrderModel.find({
-      status: orderStatus.IN_PROGRESS,
-      ...condition
-    })
-      .countDocuments()
-      .lean()
+    const [cntInprogressOrder, cntCookingOrder, cntRejectedOrder, cntServedOrder, cntPaidOrder] = await Promise.all([
+      OrderModel.find({ status: orderStatus.IN_PROGRESS, ...condition })
+        .countDocuments()
+        .lean(),
+      OrderModel.find({ status: orderStatus.COOKING, ...condition })
+        .countDocuments()
+        .lean(),
+      OrderModel.find({ status: orderStatus.REJECTED, ...condition })
+        .countDocuments()
+        .lean(),
+      OrderModel.find({ status: orderStatus.SERVED, ...condition })
+        .countDocuments()
+        .lean(),
+      OrderModel.find({ status: orderStatus.PAID, ...condition })
+        .countDocuments()
+        .lean()
+    ])
 
-    res.cntCookingOrder = await OrderModel.find({
-      status: orderStatus.COOKING,
-      ...condition
-    })
-      .countDocuments()
-      .lean()
-
-    res.cntRejectedOrder = await OrderModel.find({
-      status: orderStatus.REJECTED,
-      ...condition
-    })
-      .countDocuments()
-      .lean()
-
-    res.cntServedOrder = await OrderModel.find({
-      status: orderStatus.SERVED,
-      ...condition
-    })
-      .countDocuments()
-      .lean()
-
-    res.cntPaidOrder = await OrderModel.find({
-      status: orderStatus.PAID,
-      ...condition
-    })
-      .countDocuments()
-      .lean()
+    res.cntInprogressOrder = cntInprogressOrder
+    res.cntCookingOrder = cntCookingOrder
+    res.cntRejectedOrder = cntRejectedOrder
+    res.cntServedOrder = cntServedOrder
+    res.cntPaidOrder = cntPaidOrder
 
     if (status) {
       condition = {
@@ -214,4 +217,100 @@ const getStatisticsOrder = async (query: StatisticOrderQuery) => {
   }
 }
 
-export default { addOrder, getUserOrder, getStatisticsOrder }
+const updateOrder = async (query: OrderUpdateQuery) => {
+  try {
+    const { order_id, product_id, buy_count, status } = query
+    if (!order_id) {
+      throw new ErrorHandler(STATUS.NOT_ACCEPTABLE, 'Chưa cung cấp đơn hàng')
+    }
+    const existOrder = await OrderModel.findById(order_id).lean()
+    if (!existOrder) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Không tìm thấy đơn hàng')
+    }
+    if (existOrder.status !== orderStatus.IN_PROGRESS && !status) {
+      throw new ErrorHandler(STATUS.NOT_ACCEPTABLE, 'Món ăn hiện đã được chuẩn bị, không thể thay đổi đơn hàng')
+    }
+    const updateData: any = {}
+    if (status) {
+      updateData.status = status
+    }
+    if (product_id) {
+      updateData.product = product_id
+    }
+    if (buy_count) {
+      updateData.buy_count = buy_count
+    }
+    const updatedData = await OrderModel.findByIdAndUpdate(
+      order_id,
+      {
+        $set: updateData
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+      .populate('product')
+      .lean()
+    const response = {
+      message: 'Cập nhật đơn hàng thành công',
+      data: updatedData
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+const deleteOrder = async (order_id: string) => {
+  try {
+    if (!order_id) {
+      throw new ErrorHandler(STATUS.NOT_ACCEPTABLE, 'Chưa cung cấp đơn hàng')
+    }
+    const existOrder = await OrderModel.findById(order_id).lean()
+    if (!existOrder) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Không tìm thấy đơn hàng')
+    }
+    await OrderModel.deleteOne({
+      _id: order_id
+    })
+    const response = {
+      message: 'Xóa đơn hàng thành công'
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+const findCustomer = async (customer_id: string) => {
+  try {
+    if (!customer_id) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Chưa cung cấp id của khách hàng')
+    }
+    const existOrder = await OrderModel.findOne({ customer_id }).lean()
+    if (!existOrder) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Không tồn tại khách hàng với id đã cung cấp')
+    }
+    const data = pick(existOrder, ['customer_id', 'customer_name', 'table_number'])
+    const response = {
+      message: 'Lấy khách hàng thành công',
+      data
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export default {
+  addOrder,
+  getUserOrder,
+  getStatisticsOrder,
+  getStatisticsTable,
+  updateOrder,
+  deleteOrder,
+  findCustomer
+}
