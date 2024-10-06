@@ -25,3 +25,36 @@ export const checkAvailableTable = async (req: Request, res: Response) => {
     throw error
   }
 }
+
+export const getAllTables = async (req: Request, res: Response) => {
+  try {
+    const result = await tableService.getAllTables()
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const updateTable = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const body: TableRequest = req.body
+    const result = await tableService.updateTable(id, body)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const deleteTable = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const result = await tableService.deleteTable(id)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
