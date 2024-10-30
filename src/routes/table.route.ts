@@ -1,13 +1,14 @@
 import express from 'express'
 import { addTable, checkAvailableTable, deleteTable, getAllTables, updateTable } from '~/controllers/table.controller'
+import authMiddleware from '~/middlewares/auth.middleware'
 import { wrapAsync } from '~/utils/response'
 
 const router = express.Router()
 
-router.post('/', wrapAsync(addTable))
-router.post('/check-available-table', wrapAsync(checkAvailableTable))
-router.get('/', wrapAsync(getAllTables))
-router.put('/:id', wrapAsync(updateTable))
-router.delete('/:id', wrapAsync(deleteTable))
+router.post('/', authMiddleware.verifyAccessToken, authMiddleware.verifyAdmin, wrapAsync(addTable))
+router.post('/check-available-table', authMiddleware.verifyAccessToken, wrapAsync(checkAvailableTable))
+router.get('/', authMiddleware.verifyAccessToken, authMiddleware.verifyAdmin, wrapAsync(getAllTables))
+router.put('/:id', authMiddleware.verifyAccessToken, authMiddleware.verifyAdmin, wrapAsync(updateTable))
+router.delete('/:id', authMiddleware.verifyAccessToken, authMiddleware.verifyAdmin, wrapAsync(deleteTable))
 
 export default router

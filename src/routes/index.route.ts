@@ -7,7 +7,7 @@ import OrderRouter from './order.route'
 import CategoryRouter from './category.route'
 
 const routes = (app: Application) => {
-  app.use('/api/user', UserRouter)
+  app.use('/api/users', UserRouter)
   app.use('/api/auth', AuthRouter)
   app.use('/api/products', ProductRouter)
   app.use('/api/tables', TableRouter)

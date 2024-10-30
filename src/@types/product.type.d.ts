@@ -13,6 +13,7 @@ interface ProductQuery {
   limit: string
   name: string
   categoryId: string
+  status: string
   priceMax: string
   priceMin: string
   order: 'asc' | 'desc'

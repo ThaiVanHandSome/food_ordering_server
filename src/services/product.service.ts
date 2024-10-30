@@ -1,5 +1,7 @@
 import { STATUS } from '~/constants/httpStatus'
-import { ProductModel } from '~/models'
+import { orderStatus } from '~/enums/orderStatus.enum'
+import { productStatus } from '~/enums/productStatus.enum'
+import { OrderModel, ProductModel } from '~/models'
 import { ErrorHandler } from '~/utils/response'
 
 const addProduct = async (product: ProductRequest) => {
@@ -26,14 +28,65 @@ const addProduct = async (product: ProductRequest) => {
   }
 }
 
+const updateProduct = async (id: string, body: ProductRequest) => {
+  try {
+    const existedProduct = await ProductModel.findById(id)
+    if (!existedProduct) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Không tìm thấy sản phẩm')
+    }
+    let newBody = { ...body }
+    if (body.cloudinaryUrl) {
+      newBody = {
+        ...body,
+        image: body.cloudinaryUrl
+      }
+    }
+    const updatedProduct = await ProductModel.findByIdAndUpdate(id, {
+      $set: newBody
+    })
+    if (body.status === productStatus.UNAVAILABLE) {
+      await OrderModel.updateMany(
+        {
+          product: id,
+          status: orderStatus.IN_PROGRESS
+        },
+        {
+          status: orderStatus.REJECTED
+        }
+      )
+    }
+    const response = {
+      message: 'Cập nhật sản phẩm thành công',
+      data: updatedProduct
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
 const getProducts = async (query: ProductQuery) => {
   try {
-    let { page = 1, limit = 6, name, categoryId, priceMax, priceMin, sortBy = 'createdAt', order = 'asc' } = query
+    let {
+      page = 1,
+      limit = 6,
+      name,
+      categoryId,
+      priceMax,
+      priceMin,
+      sortBy = 'createdAt',
+      order = 'asc',
+      status
+    } = query
     page = Number(page)
     limit = Number(limit)
     let condition: any = {}
     if (categoryId) {
       condition.category = categoryId
+    }
+    if (status) {
+      condition.status = status
     }
     if (priceMax) {
       condition.price = {
@@ -114,4 +167,23 @@ const increaseView = async (productId: string) => {
   }
 }
 
-export default { addProduct, getProducts, increaseView }
+const deleteProduct = async (productId: string) => {
+  try {
+    const existedProduct = await ProductModel.findById(productId)
+    if (!existedProduct) {
+      throw new ErrorHandler(STATUS.NOT_FOUND, 'Không tìm thấy sản phẩm')
+    }
+    await ProductModel.deleteOne({
+      _id: productId
+    })
+    const response = {
+      message: 'Xóa sản phẩm thành công'
+    }
+    return response
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export default { addProduct, updateProduct, getProducts, increaseView, deleteProduct }

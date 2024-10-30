@@ -13,6 +13,18 @@ export const addProduct = async (req: Request, res: Response) => {
   }
 }
 
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const body = req.body
+    const result = await productService.updateProduct(id, body)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const productQuery: any = req.query
@@ -28,6 +40,17 @@ export const increaseView = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const result = await productService.increaseView(id)
+    return responseSuccess(res, result)
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const result = await productService.deleteProduct(id)
     return responseSuccess(res, result)
   } catch (error) {
     console.log(error)

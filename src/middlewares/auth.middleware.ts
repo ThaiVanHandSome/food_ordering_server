@@ -1,16 +1,50 @@
 import { NextFunction, Request, Response } from 'express'
 import { body } from 'express-validator'
 import { STATUS } from '~/constants/httpStatus'
+import { ROLE } from '~/enums/role.enum'
 import { verifyToken } from '~/utils/jwt'
 import { ErrorHandler } from '~/utils/response'
 
 const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
-  const accessToken = req.headers.authorization?.replace('Bearer ', '')
+  const accessToken = await req.headers.authorization?.replace('Bearer ', '')
+
   if (accessToken) {
     try {
       const decoded = (await verifyToken(accessToken)) as PayloadToken
       if (decoded) return next()
       throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Không tồn tại token')
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+  throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Token chưa được gửi đi')
+}
+
+const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+  const accessToken = await req.headers.authorization?.replace('Bearer ', '')
+  if (accessToken) {
+    try {
+      const decoded = (await verifyToken(accessToken)) as PayloadToken
+      if (decoded.role === ROLE.ADMIN || decoded.role === ROLE.EMPLOYEE) return next()
+      throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Bạn không có quyền')
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+  throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Token chưa được gửi đi')
+}
+
+const verifyAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const accessToken = await req.headers.authorization?.replace('Bearer ', '')
+  if (accessToken) {
+    try {
+      const decoded = (await verifyToken(accessToken)) as PayloadToken
+      console.log(decoded)
+
+      if (decoded.role === 'ADMIN') return next()
+      throw new ErrorHandler(STATUS.UNAUTHORIZED, 'Bạn không có quyền')
     } catch (error) {
       console.log(error)
       throw error
@@ -34,4 +68,4 @@ const authUserRules = () => {
   ]
 }
 
-export default { authUserRules, verifyAccessToken }
+export default { authUserRules, verifyAccessToken, verifyAdmin, verifyUser }

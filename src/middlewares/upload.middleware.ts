@@ -22,6 +22,7 @@ export const uploadImageToCloudinary = async (req: Request, res: Response, next:
   try {
     const file: CloudinaryFile = req.file as CloudinaryFile
     if (!file) return next()
+
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'image',

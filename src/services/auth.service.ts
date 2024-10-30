@@ -6,6 +6,8 @@ import { ErrorHandler } from '~/utils/response'
 import dotenv from 'dotenv'
 import { omit } from 'lodash'
 import { tokenTypes } from '~/enums/token.enum'
+import { v4 as uuidv4 } from 'uuid'
+
 dotenv.config()
 
 const login = async (loginData: Login) => {
@@ -13,13 +15,13 @@ const login = async (loginData: Login) => {
     const { email, password } = loginData
     const existUser = await UserModel.findOne({ email }).lean()
     if (!existUser) {
-      throw new ErrorHandler(STATUS.UNPROCESSABLE_ENTITY, {
+      throw new ErrorHandler(STATUS.NOT_FOUND, {
         email: 'Email không tồn tại trong hệ thống'
       })
     }
     const match = compareValue(password, existUser.password)
     if (!match) {
-      throw new ErrorHandler(STATUS.UNPROCESSABLE_ENTITY, {
+      throw new ErrorHandler(STATUS.NOT_FOUND, {
         password: 'Password không chính xác'
       })
     }
@@ -28,7 +30,7 @@ const login = async (loginData: Login) => {
       role: existUser.role
     }
     const accessToken = await signToken(payloadToken, process.env.EXPIRE_ACCESS_TOKEN as string)
-    const refreshToken = await signToken(payloadToken, process.env.EXPIRE_REFRESH_TOKEN as string)
+    const refreshToken = uuidv4()
     await new TokenModel({
       token: refreshToken,
       user: existUser._id,
